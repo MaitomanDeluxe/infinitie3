@@ -3,17 +3,19 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>統合版 高速計算アプリケーション</title>
+    <title>アルティメット計算アプリ</title>
     <style>
         :root {
             --primary-color: #007bff;
             --secondary-color: #6c757d;
             --success-color: #28a745;
             --danger-color: #dc3545;
+            --info-color: #17a2b8;
             --light-color: #f8f9fa;
             --dark-color: #343a40;
-            --background-color: #e9ecef;
+            --background-color: #f4f7f9;
             --font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, "Helvetica Neue", Arial, sans-serif;
+            --monospace-family: "SFMono-Regular", Consolas, "Liberation Mono", Menlo, Courier, monospace;
         }
 
         body {
@@ -27,29 +29,34 @@
         }
 
         .container {
-            width: 90%;
+            width: 95%;
             max-width: 800px;
             background: #ffffff;
-            border-radius: 16px;
-            box-shadow: 0 8px 24px rgba(0, 0, 0, 0.1);
+            border-radius: 20px;
+            box-shadow: 0 16px 40px rgba(0, 0, 0, 0.12);
             overflow: hidden;
+            display: flex;
+            flex-direction: column;
+            height: 90vh;
         }
 
         header {
             text-align: center;
             padding: 1.5rem 2rem;
             border-bottom: 1px solid #dee2e6;
+            background: var(--light-color);
         }
 
         header h1 {
             margin: 0;
-            font-size: 1.75rem;
+            font-size: 1.8rem;
+            font-weight: 700;
             color: var(--dark-color);
         }
 
         .tabs {
             display: flex;
-            background-color: var(--light-color);
+            background-color: #e9ecef;
         }
 
         .tab-button {
@@ -63,38 +70,31 @@
             background: none;
             color: var(--secondary-color);
             transition: all 0.3s ease;
-            border-bottom: 3px solid transparent;
+            border-bottom: 4px solid transparent;
         }
 
         .tab-button.active {
             color: var(--primary-color);
+            background: #fff;
             border-bottom-color: var(--primary-color);
         }
 
         .content {
             padding: 2rem;
+            flex-grow: 1;
+            overflow-y: auto;
         }
 
-        .tab-content {
-            display: none;
-        }
-
-        .tab-content.active {
-            display: block;
-        }
+        .tab-content { display: none; }
+        .tab-content.active { display: block; }
         
-        /* Common styles for controls */
         .controls, .speed-control, .input-group {
-            margin: 1.5rem 0;
+            margin-bottom: 1.5rem;
             display: flex;
             justify-content: center;
             align-items: center;
             gap: 1rem;
             flex-wrap: wrap;
-        }
-
-        label {
-            font-weight: 500;
         }
 
         button {
@@ -106,98 +106,96 @@
             border-radius: 8px;
             color: white;
             transition: all 0.2s ease;
-            box-shadow: 0 2px 4px rgba(0,0,0,0.1);
         }
-        button:hover:not(:disabled) {
-            transform: translateY(-2px);
-            box-shadow: 0 4px 8px rgba(0,0,0,0.15);
-        }
-        button:disabled {
-            background-color: #adb5bd;
-            cursor: not-allowed;
-            box-shadow: none;
-        }
+        button:hover:not(:disabled) { transform: translateY(-2px); }
+        button:disabled { background-color: #adb5bd; cursor: not-allowed; }
         
-        input[type="range"], input[type="number"] {
-            font-size: 1rem;
-            padding: 0.5rem;
-            border: 1px solid #ced4da;
-            border-radius: 6px;
-        }
-        
-        /* Mode-specific styles */
-        #startButton { background-color: var(--success-color); }
-        #stopButton { background-color: var(--danger-color); }
-        #generateButton { background-color: var(--primary-color); }
-        
-        #output {
+        .output-box {
             width: 100%;
             height: 35vh;
             border: 1px solid #ced4da;
             background-color: var(--light-color);
             overflow-y: scroll;
-            padding: 0.5rem;
+            padding: 0.75rem;
             box-sizing: border-box;
             border-radius: 8px;
-            text-align: left;
+            font-family: var(--monospace-family);
+            line-height: 1.6;
+            word-break: break-all;
         }
-        #output p { margin: 4px 8px; font-family: monospace; }
         
-        #status {
-            margin-top: 1rem;
-            font-weight: 500;
-            min-height: 24px;
-        }
+        /* Specific Styles */
+        #piOutput { font-size: 1.2rem; }
     </style>
 </head>
 <body>
-
     <div class="container">
-        <header>
-            <h1>高速計算アプリケーション</h1>
-        </header>
+        <header><h1>アルティメット計算アプリ</h1></header>
 
         <nav class="tabs">
-            <button class="tab-button active" data-tab="infinite">無限計算モード</button>
-            <button class="tab-button" data-tab="file">ファイル出力モード</button>
+            <button class="tab-button active" data-tab="expression">数式計算</button>
+            <button class="tab-button" data-tab="pi">円周率</button>
+            <button class="tab-button" data-tab="prime">素数</button>
         </nav>
 
         <main class="content">
-            <!-- Infinite Calculation Mode -->
-            <div id="infinite" class="tab-content active">
-                <div class="speed-control">
-                    <label for="speedSlider">遅い</label>
-                    <input type="range" id="speedSlider" min="1" max="100" value="50">
-                    <label for="speedSlider">速い</label>
-                </div>
+            <!-- Expression Calculator -->
+            <div id="expression" class="tab-content active">
+                <p><strong>モードを選択してください:</strong></p>
                 <div class="controls">
-                    <button id="startButton">開始</button>
-                    <button id="stopButton">停止</button>
+                     <button id="setInfiniteMode">無限計算モード</button>
+                     <button id="setFileMode">ファイル出力モード</button>
                 </div>
-                <div id="output"></div>
+                <div id="infiniteModeContent">
+                    <div class="speed-control">
+                        <label>速度:</label>
+                        <input type="range" id="speedSlider" min="1" max="100" value="50">
+                    </div>
+                    <div class="controls">
+                        <button id="startButton" style="background-color: var(--success-color);">開始</button>
+                        <button id="stopButton" style="background-color: var(--danger-color);">停止</button>
+                    </div>
+                    <div id="outputExpr" class="output-box"></div>
+                </div>
+                <div id="fileModeContent" style="display: none;">
+                    <div class="input-group">
+                        <label>計算回数:</label>
+                        <input type="number" id="calcCount" value="1000000" min="1">
+                    </div>
+                    <div class="controls">
+                        <button id="generateButton" style="background-color: var(--primary-color);">計算してダウンロード</button>
+                    </div>
+                    <div id="status"></div>
+                </div>
             </div>
 
-            <!-- File Output Mode -->
-            <div id="file" class="tab-content">
-                <p>指定回数の計算結果を.txtファイルでダウンロードします。</p>
-                <div class="input-group">
-                    <label for="calcCount">計算回数:</label>
-                    <input type="number" id="calcCount" value="1000000" min="1">
-                </div>
+            <!-- Pi Calculator -->
+            <div id="pi" class="tab-content">
                 <div class="controls">
-                    <button id="generateButton">計算してダウンロード</button>
+                    <button id="piStartButton" style="background-color: var(--success-color);">計算開始</button>
+                    <button id="piStopButton" style="background-color: var(--danger-color);">停止</button>
                 </div>
-                <div id="status"></div>
+                <div id="piOutput" class="output-box">3.</div>
+            </div>
+
+            <!-- Prime Number Finder -->
+            <div id="prime" class="tab-content">
+                <div class="controls">
+                    <button id="primeStartButton" style="background-color: var(--success-color);">検索開始</button>
+                    <button id="primeStopButton" style="background-color: var(--danger-color);">停止</button>
+                </div>
+                <div id="primeOutput" class="output-box"></div>
             </div>
         </main>
     </div>
 
     <script>
-        // Tab switching logic
+        // --- Main Tab Logic ---
         const tabs = document.querySelectorAll('.tab-button');
         const contents = document.querySelectorAll('.tab-content');
         tabs.forEach(tab => {
             tab.addEventListener('click', () => {
+                stopAllCalculations();
                 tabs.forEach(item => item.classList.remove('active'));
                 contents.forEach(item => item.classList.remove('active'));
                 tab.classList.add('active');
@@ -205,99 +203,165 @@
             });
         });
 
-        // --- Infinite Calculation Mode ---
+        function stopAllCalculations() {
+            stopInfiniteCalculation();
+            stopPiCalculation();
+            stopPrimeGeneration();
+        }
+
+        // --- Expression Calculator ---
+        const infiniteModeBtn = document.getElementById('setInfiniteMode');
+        const fileModeBtn = document.getElementById('setFileMode');
+        const infiniteModeContent = document.getElementById('infiniteModeContent');
+        const fileModeContent = document.getElementById('fileModeContent');
+        
+        infiniteModeBtn.addEventListener('click', () => {
+            infiniteModeContent.style.display = 'block';
+            fileModeContent.style.display = 'none';
+        });
+        fileModeBtn.addEventListener('click', () => {
+            infiniteModeContent.style.display = 'none';
+            fileModeContent.style.display = 'block';
+        });
+
+        // (Infinite Mode)
         const startButton = document.getElementById('startButton');
         const stopButton = document.getElementById('stopButton');
-        const outputDiv = document.getElementById('output');
+        const outputExpr = document.getElementById('outputExpr');
         const speedSlider = document.getElementById('speedSlider');
-        let infinite_x = 1;
-        let infinite_intervalId = null;
-        const UI_UPDATE_INTERVAL = 100;
+        let infinite_x = 1, infinite_intervalId = null;
 
         function startInfiniteCalculation() {
-            if (infinite_intervalId !== null) return;
-            startButton.disabled = true;
-            stopButton.disabled = false;
-            
+            if (infinite_intervalId) return;
+            startButton.disabled = true; stopButton.disabled = false;
             infinite_intervalId = setInterval(() => {
                 const calculationsPerUpdate = Math.pow(parseInt(speedSlider.value), 2);
-                let resultsHtml = '';
+                let html = '';
                 for (let i = 0; i < calculationsPerUpdate; i++) {
                     const result = ((infinite_x + 5) * 2 - 4) / 2 - infinite_x;
-                    resultsHtml += `<p>x = ${infinite_x.toLocaleString().padStart(12, ' ')} | 結果 = ${result}</p>`;
+                    html += `<p>x = ${infinite_x.toLocaleString()}: 結果 = ${result}</p>`;
                     infinite_x++;
                 }
-                outputDiv.insertAdjacentHTML('beforeend', resultsHtml);
-                outputDiv.scrollTop = outputDiv.scrollHeight;
-            }, UI_UPDATE_INTERVAL);
+                outputExpr.insertAdjacentHTML('beforeend', html);
+                outputExpr.scrollTop = outputExpr.scrollHeight;
+            }, 100);
         }
-
         function stopInfiniteCalculation() {
-            if (infinite_intervalId === null) return;
             clearInterval(infinite_intervalId);
             infinite_intervalId = null;
-            startButton.disabled = false;
-            stopButton.disabled = true;
+            startButton.disabled = false; stopButton.disabled = true;
         }
-
         startButton.addEventListener('click', startInfiniteCalculation);
         stopButton.addEventListener('click', stopInfiniteCalculation);
-        speedSlider.addEventListener('input', () => {
-            if (infinite_intervalId !== null) {
-                stopInfiniteCalculation();
-                startInfiniteCalculation();
-            }
-        });
-        stopButton.disabled = true; // Initial state
+        stopButton.disabled = true;
 
-        // --- File Output Mode ---
+        // (File Mode)
         const generateButton = document.getElementById('generateButton');
         const calcCountInput = document.getElementById('calcCount');
         const statusDiv = document.getElementById('status');
-
-        async function generateFile() {
+        generateButton.addEventListener('click', async () => {
             const count = parseInt(calcCountInput.value);
-            if (isNaN(count) || count <= 0) {
-                statusDiv.textContent = 'エラー: 正の整数を入力してください。';
-                statusDiv.style.color = 'var(--danger-color)';
-                return;
-            }
-
-            statusDiv.textContent = '計算中...';
-            statusDiv.style.color = 'var(--secondary-color)';
-            generateButton.disabled = true;
-            await new Promise(resolve => setTimeout(resolve, 50));
-
+            if (isNaN(count) || count <= 0) { statusDiv.textContent = 'エラー: 正の整数を入力'; return; }
+            statusDiv.textContent = '計算中...'; generateButton.disabled = true;
+            await new Promise(r => setTimeout(r, 50));
             try {
-                let fileContent = '';
-                // For very large numbers of lines, building an array can consume too much memory.
-                // Building a string directly can be more memory-efficient in some JS engines.
-                for (let i = 1; i <= count; i++) {
-                    const result = ((i + 5) * 2 - 4) / 2 - i;
-                    fileContent += `x = ${i}, 結果 = ${result}\n`;
-                }
-                
-                const blob = new Blob([fileContent], { type: 'text/plain;charset=utf-8' });
+                let content = '';
+                for (let i = 1; i <= count; i++) { content += `x = ${i}, 結果 = 3\n`; }
+                const blob = new Blob([content], { type: 'text/plain;charset=utf-8' });
                 const link = document.createElement('a');
                 link.href = URL.createObjectURL(blob);
-                link.download = `results_${count.toLocaleString()}_lines.txt`;
-                document.body.appendChild(link);
+                link.download = `results_${count.toLocaleString()}.txt`;
                 link.click();
-                document.body.removeChild(link);
                 URL.revokeObjectURL(link.href);
-
-                statusDiv.textContent = `${count.toLocaleString()}回の計算が完了しました。`;
-                statusDiv.style.color = 'var(--success-color)';
-            } catch (error) {
-                statusDiv.textContent = `エラーが発生しました: ${error.message}`;
-                statusDiv.style.color = 'var(--danger-color)';
+                statusDiv.textContent = `${count.toLocaleString()}回の計算完了。`;
+            } catch (e) {
+                statusDiv.textContent = `エラー: ${e.message}`;
             } finally {
                 generateButton.disabled = false;
             }
+        });
+
+
+        // --- Pi Calculator ---
+        const piStartButton = document.getElementById('piStartButton');
+        const piStopButton = document.getElementById('piStopButton');
+        const piOutput = document.getElementById('piOutput');
+        let pi_intervalId = null;
+        let pi_q = 1n, pi_r = 180n, pi_t = 60n, pi_i = 2n;
+
+        function startPiCalculation() {
+            if (pi_intervalId) return;
+            piStartButton.disabled = true; piStopButton.disabled = false;
+            pi_intervalId = setInterval(() => {
+                let digit;
+                let y = (pi_q * (27n * pi_i - 12n) + 5n * pi_r) / (5n * pi_t);
+                let x = 3n * (3n * pi_i + 1n) * (3n * pi_i + 2n);
+                pi_r = 10n * (pi_q * (5n * pi_i - 2n) + pi_r - y * pi_t);
+                pi_q = 10n * pi_q * pi_i * x;
+                pi_t = pi_t * x;
+                pi_i = pi_i + 1n;
+                digit = (pi_q * (27n * pi_i - 12n) + 5n * pi_r) / (5n * pi_t);
+
+                if (digit === (pi_q * (27n * (pi_i + 1n) - 12n) + 5n * pi_r) / (5n * pi_t)) {
+                     piOutput.textContent += digit.toString();
+                     piOutput.scrollTop = piOutput.scrollHeight;
+                }
+            }, 10); // 10msごとに1ステップ進める
         }
 
-        generateButton.addEventListener('click', generateFile);
-    </script>
+        function stopPiCalculation() {
+            clearInterval(pi_intervalId);
+            pi_intervalId = null;
+            piStartButton.disabled = false; piStopButton.disabled = true;
+        }
+        piStartButton.addEventListener('click', startPiCalculation);
+        piStopButton.addEventListener('click', stopPiCalculation);
+        piStopButton.disabled = true;
 
+        // --- Prime Number Finder ---
+        const primeStartButton = document.getElementById('primeStartButton');
+        const primeStopButton = document.getElementById('primeStopButton');
+        const primeOutput = document.getElementById('primeOutput');
+        let prime_intervalId = null;
+        let currentNumber = 2;
+        
+        function isPrime(num) {
+            if (num <= 1) return false;
+            if (num <= 3) return true;
+            if (num % 2 === 0 || num % 3 === 0) return false;
+            for (let i = 5; i * i <= num; i = i + 6) {
+                if (num % i === 0 || num % (i + 2) === 0) return false;
+            }
+            return true;
+        }
+
+        function startPrimeGeneration() {
+            if (prime_intervalId) return;
+            primeStartButton.disabled = true; primeStopButton.disabled = false;
+            prime_intervalId = setInterval(() => {
+                let found = 0;
+                let html = '';
+                while(found < 50) { // UIが固まらないように50個見つけたら一度描画
+                    if (isPrime(currentNumber)) {
+                        html += `${currentNumber.toLocaleString()} `;
+                        found++;
+                    }
+                    currentNumber++;
+                }
+                primeOutput.insertAdjacentHTML('beforeend', html);
+                primeOutput.scrollTop = primeOutput.scrollHeight;
+            }, 50);
+        }
+        
+        function stopPrimeGeneration() {
+            clearInterval(prime_intervalId);
+            prime_intervalId = null;
+            primeStartButton.disabled = false; primeStopButton.disabled = true;
+        }
+        primeStartButton.addEventListener('click', startPrimeGeneration);
+        primeStopButton.addEventListener('click', stopPrimeGeneration);
+        primeStopButton.disabled = true;
+
+    </script>
 </body>
 </html>
